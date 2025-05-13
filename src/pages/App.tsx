@@ -15,16 +15,22 @@ function App() {
     const [step, setStep] = useState<number>(0);
     const [formData, setFormData] = useState<FormData>({ location: null, item: null, travel: null, claim: null, student: null });
     const [formError, setFormError] = useState<string | null>(null);
+    const [submitDisabled, setSubmitDisabled] = useState<boolean>(true);
 
     const formChangeHandler = (event: any) => {
         const { name, value } = event.target;
         setFormData({...formData, [name]: value});
+
+        const form = document.querySelector("form")!;
+        if (form.checkValidity()) setSubmitDisabled(false)
+        else setSubmitDisabled(true);
     }
 
     function submitHandler(event: React.FormEvent) {
         event.preventDefault();
 
         const form = document.querySelector("form")!;
+
         if (!form.checkValidity()) {
             const inputField = form.querySelector("input")!;
             const inputName = inputField.name;
@@ -39,6 +45,7 @@ function App() {
             return;
         }
 
+        setSubmitDisabled(true);
         setFormError(null);
         if (step !== QUESTIONS) return setStep(step + 1);
 
@@ -68,37 +75,41 @@ function App() {
 
                 </fieldset> }
 
-                { step === 1 && <fieldset className="question">
-                    <h2>What is your most expensive belonging?</h2>
-                    <label style={{display:"none"}} htmlFor="belonging">What is your mouse expensive belonging?</label>
-                    <input type="text" id="belonging" name="item" required max={15} min={2} />
-                </fieldset> }
+                { step === 1 &&
+                    <fieldset className="question">
+                        <h2>What is your most expensive belonging?</h2>
+                        <label style={{display:"none"}} htmlFor="belonging">What is your most expensive belonging?</label>
+                        <input type="text" id="belonging" name="item" onChange={formChangeHandler} required max={15} min={2} />
+                    </fieldset> }
 
-                { step === 2 && <fieldset className="question">
-                    <h2>Do you travel a lot?</h2>
-                    <input type="radio" id="travel-yes" name="travel" />
-                    <label htmlFor="travel-yes">Yes</label>
-                    <input type="radio" id="travel-no" name="travel" />
-                    <label htmlFor="travel-no">No</label>
-                </fieldset> }
+                { step === 2 &&
+                    <fieldset className="question">
+                        <h2>Do you travel a lot?</h2>
+                        <input type="radio" id="travel-yes" name="travel" />
+                        <label htmlFor="travel-yes">Yes</label>
+                        <input type="radio" id="travel-no" name="travel" />
+                        <label htmlFor="travel-no">No</label>
+                    </fieldset> }
 
-                { step === 3 && <fieldset className="question">
-                    <h2>Ever had to file a claim before?</h2>
-                    <input type="radio" id="claim-yes" name="claim" />
-                    <label htmlFor="claim-yes">Yes</label>
-                    <input type="radio" id="claim-no" name="claim" />
-                    <label htmlFor="claim-no">No</label>
-                </fieldset> }
+                { step === 3 &&
+                    <fieldset className="question">
+                        <h2>Ever had to file a claim before?</h2>
+                        <input type="radio" id="claim-yes" name="claim" />
+                        <label htmlFor="claim-yes">Yes</label>
+                        <input type="radio" id="claim-no" name="claim" />
+                        <label htmlFor="claim-no">No</label>
+                    </fieldset> }
 
-                { step === 4 && <fieldset className="question">
-                    <h2>Are you a student?</h2>
-                    <input type="radio" id="student-yes" name="student" />
-                    <label htmlFor="student-yes">Yes</label>
-                    <input type="radio" id="student-no" name="student" />
-                    <label htmlFor="student-no">No</label>
-                </fieldset> }
+                { step === 4 &&
+                    <fieldset className="question">
+                        <h2>Are you a student?</h2>
+                        <input type="radio" id="student-yes" name="student" />
+                        <label htmlFor="student-yes">Yes</label>
+                        <input type="radio" id="student-no" name="student" />
+                        <label htmlFor="student-no">No</label>
+                    </fieldset> }
                 { formError && <span className="error">{formError}</span> }
-                <button type="submit" >{step === QUESTIONS ? "Submit" : "Continue"}</button>
+                <button type="submit" disabled={submitDisabled}>{step === QUESTIONS ? "Submit" : "Continue"}</button>
             </form>
         </>
     )

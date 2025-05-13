@@ -17,6 +17,7 @@ fieldset {
 
 button:disabled {
   background-color: #E8E8E8;
+  cursor: not-allowed;
 }
 
 button {
@@ -28,6 +29,7 @@ button {
   font-weight: bold;
   border: none;
   border-radius: 50px;
+  cursor: pointer;
 }
 
 .radio-container {
