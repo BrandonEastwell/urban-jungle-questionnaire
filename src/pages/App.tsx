@@ -125,7 +125,7 @@ function App() {
 
                     { formError && <span className="error">{formError}</span> }
                     <button type="submit" disabled={submitDisabled}>{step === QUESTIONS ? "Submit" : "Continue"}</button>
-                    { step > 0 && <a className="back-btn" onClick={() => setStep(step - 1)}>back</a> }
+                    { step > 0 && <a className="back-btn" onClick={() => setStep(step - 1)}>Back</a> }
                 </form>
             </div>
         </>
