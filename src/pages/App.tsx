@@ -1,12 +1,13 @@
 import '../styles/globals.css'
-import React, {useState} from "react";
+import React, { useState } from "react";
 import svg from "../assets/urbanjungle.svg"
 import {initFormAnswers, type Question} from "../lib/types/questions.ts";
 import {FormInput} from "../components/forms/FormInput.tsx";
 
+const requiredSubmitSteps = initFormAnswers.length - 1;
+
 function App() {
-    const QUESTIONS = initFormAnswers.length;
-    const [step, setStep] = useState<number>(1);
+    const [step, setStep] = useState<number>(0);
     const [formAnswers, setFormAnswers] = useState<Question[]>(initFormAnswers);
     const [formError, setFormError] = useState<string | null>(null);
     const [submitDisabled, setSubmitDisabled] = useState<boolean>(true);
@@ -16,7 +17,8 @@ function App() {
     const formChangeHandler = (event: any) => {
         const { value } = event.target;
         let copyOfAnswers = formAnswers;
-        copyOfAnswers[step - 1].answer = value;
+
+        copyOfAnswers[step].answer = value;
         setFormAnswers(copyOfAnswers);
 
         const form = document.querySelector("form")!;
@@ -24,7 +26,7 @@ function App() {
         else setSubmitDisabled(true);
     }
 
-    function submitHandler(event: React.FormEvent) {
+    async function submitHandler(event: React.FormEvent) {
         event.preventDefault();
 
         const form = document.querySelector("form")!;
@@ -45,8 +47,22 @@ function App() {
 
         setSubmitDisabled(true);
         setFormError(null);
-        if (step !== QUESTIONS) return setStep(step + 1);
 
+        if (step !== requiredSubmitSteps) {
+            return setStep(step + 1);
+        }
+
+        if (step === requiredSubmitSteps) {
+            const answers = formAnswers.reduce((prev, cur) => {
+                return prev + `${cur.question}, ${cur.answer}\n`
+            }, '');
+            const res: string = await getLanguageModelResponse(answers);
+            // set result state
+            return
+        }
+    }
+
+    async function getLanguageModelResponse(formData: string) {
         const prompt = `
                 You are a helpful assistant that explains insurance in a friendly, easy way.
 
@@ -58,13 +74,14 @@ function App() {
                 5. Travel Insurance – Cover for trips you take throughout the year, or a one-off trip with one or more destinations.
                 6. Landlord Insurance – Protects landlords against loss or damage to buildings and can also cover the landlord's contents within the property.
                 
-                User Profile:
+                User Profile: 
+                ${formData}
                 
                 
                 Which cover types should they consider and why? Keep it clear and jargon-free.
                 `
 
-        const res = fetch("https://api.anthropic.com/v1/messages", {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -79,6 +96,9 @@ function App() {
             })
         })
 
+        const data = await res.json()
+
+        return data
     }
 
     return (
@@ -91,25 +111,25 @@ function App() {
             <div className="content-container">
                 <h1>Find out what coverage you need.</h1>
                 <form onSubmit={(event) => submitHandler(event)} noValidate={true}>
-                    { step === 1 && <FormInput questionParams={formAnswers[step-1]} step={step} formChangeHandler={formChangeHandler} /> }
 
-                    { step === 2 && <FormInput questionParams={formAnswers[step-1]} step={step} formChangeHandler={formChangeHandler} /> }
+                    { step === 0 && <FormInput questionParams={formAnswers[step]} step={step} formChangeHandler={formChangeHandler} /> }
 
-                    { step === 3 && formAnswers[0].answer === "Rent" && <FormInput questionParams={formAnswers[step-1]} step={step} formChangeHandler={formChangeHandler} /> }
+                    { step === 1 && <FormInput questionParams={formAnswers[step]} step={step} formChangeHandler={formChangeHandler} /> }
 
-                    { step === 4 && <FormInput questionParams={formAnswers[step-1]} step={step} formChangeHandler={formChangeHandler} /> }
+                    { step === 2 && <FormInput questionParams={formAnswers[step]} step={step} formChangeHandler={formChangeHandler} /> }
 
-                    { step === 5 &&
-                        <FormInput questionParams={formAnswers[step-1]} step={step} formChangeHandler={formChangeHandler} />
-                    }
+                    { step === 3 && <FormInput questionParams={formAnswers[step]} step={step} formChangeHandler={formChangeHandler} /> }
 
-                    { step === 6 &&
-                        <FormInput questionParams={formAnswers[step-1]} step={step} formChangeHandler={formChangeHandler} />
-                    }
+                    { step === 4 && <FormInput questionParams={formAnswers[step]} step={step} formChangeHandler={formChangeHandler} />}
+
+                    { step === 5 && <FormInput questionParams={formAnswers[step]} step={step} formChangeHandler={formChangeHandler} />}
 
                     { formError && <span className="error">{formError}</span> }
-                    <button type="submit" disabled={submitDisabled}>{step === QUESTIONS ? "Submit" : "Continue"}</button>
+
+                    <button type="submit" disabled={submitDisabled}>{step === requiredSubmitSteps ? "Submit" : "Continue"}</button>
+
                     { step > 0 && <a className="back-btn" onClick={() => setStep(step - 1)}>Back</a> }
+
                 </form>
             </div>
         </>

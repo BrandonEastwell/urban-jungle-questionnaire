@@ -6,7 +6,7 @@ export function FormInput({ questionParams, step, formChangeHandler } : { questi
         <fieldset className="question">
             <h2>{questionParams.question}</h2>
             <div className={questionParams.type + "-container"}>
-                { questionParams.options.map((option, index) => (
+                { questionParams.type === "radio" && questionParams.options.map((option, index) => (
                     <>
                         { questionParams.type === "radio" &&
                             <>
@@ -14,15 +14,15 @@ export function FormInput({ questionParams, step, formChangeHandler } : { questi
                                 <label htmlFor={index.toString()}>{option}</label>
                             </>
                         }
-
-                        { questionParams.type === "text" &&
-                            <>
-                                <input type="text" id={index.toString()} name={step.toString()} value={questionParams.answer ? questionParams.answer : ""} onChange={formChangeHandler} required max={15} min={2} />
-                                <label id={index.toString()}>{questionParams.question}</label>
-                            </>
-                        }
                     </>
                 ))}
+
+                { questionParams.type === "text" &&
+                    <>
+                        <input type="text" id="text-input" name={step.toString()} onChange={formChangeHandler} required max={15} min={1} />
+                        <label id="text-input">{questionParams.question}</label>
+                    </>
+                }
             </div>
         </fieldset>
     )
